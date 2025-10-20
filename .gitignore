@@ -1,0 +1,37 @@
+# ===================================================================
+# Bỏ qua các file cài đặt của hệ điều hành
+# ===================================================================
+.DS_Store
+Thumbs.db
+
+# ===================================================================
+# Bỏ qua thư mục chứa các thư viện đã cài đặt (RẤT QUAN TRỌNG)
+# Thư mục này rất nặng và không bao giờ được đưa lên Github.
+# Người khác chỉ cần chạy "npm install" để tự tạo lại nó.
+# ===================================================================
+node_modules
+
+# ===================================================================
+# Bỏ qua các file log được tạo ra trong quá trình chạy hoặc gỡ lỗi
+# ===================================================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===================================================================
+# Bỏ qua file chứa biến môi trường local (CỰC KỲ QUAN TRỌNG)
+# File này chứa các thông tin bí mật cho môi trường phát triển trên máy bạn.
+# ===================================================================
+.env
+
+# ===================================================================
+# Bỏ qua các file credentials và cấu hình nhạy cảm (QUAN TRỌNG NHẤT)
+# Dòng *.json sẽ chặn TẤT CẢ các file có đuôi .json.
+# Đây chính là dòng lệnh bảo vệ file credentials Google Cloud của bạn.
+# ===================================================================
+*.json
+
+# Tuy nhiên, chúng ta cần 2 file .json là package.json và package-lock.json
+# để dự án hoạt động. Dấu "!" có nghĩa là một ngoại lệ, "Đừng bỏ qua file này".
+!package.json
+!package-lock.json
