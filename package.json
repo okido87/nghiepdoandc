@@ -1,0 +1,21 @@
+{
+  "name": "bao-cao-hien-truong",
+  "version": "1.0.0",
+  "description": "Form báo cáo hiện trường sử dụng Netlify Functions và Google Sheets/Drive API",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo \"No start script specified\" && exit 1"
+  },
+  "keywords": [
+    "netlify",
+    "google-sheets",
+    "google-drive",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "googleapis": "^109.0.1",
+    "uuid": "^9.0.0"
+  }
+}
