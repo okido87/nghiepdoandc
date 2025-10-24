@@ -21,3 +21,5 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  external_node_modules = ["next"]
+  included_files = ["src/lib/mock-env.ts"]
