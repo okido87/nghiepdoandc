@@ -1,0 +1,369 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  role        String   @default("inspector") // inspector, admin, manager
+  phone       String?
+  department  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  certificates Certificate[]
+  tasks        Task[]          @relation("TaskAssignee")
+  reports      Report[]
+  incidents    Incident[]
+  createdTasks Task[]          @relation("TaskCreator")
+  createdPlans InspectionPlan[] @relation("PlanCreator")
+  orders       Order[]
+  
+  @@map("users")
+}
+
+model Certificate {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  name        String
+  description String?
+  status      String   @default("pending") // pending, approved, rejected, expired
+  issueDate   DateTime
+  expiryDate  DateTime?
+  companyId   String
+  inspectorId String
+  planId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  company   Company     @relation(fields: [companyId], references: [id])
+  inspector User        @relation(fields: [inspectorId], references: [id])
+  plan      InspectionPlan? @relation(fields: [planId], references: [id])
+  assets    Asset[]
+  
+  @@map("certificates")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  taxCode     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  certificates Certificate[]
+  plans        InspectionPlan[]
+  assets       Asset[]         @relation("CompanyAssets")
+  
+  @@map("companies")
+}
+
+model InspectionPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("pending") // pending, in_progress, completed, cancelled
+  startDate   DateTime
+  endDate     DateTime?
+  companyId   String
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  company    Company      @relation(fields: [companyId], references: [id])
+  createdBy  User         @relation("PlanCreator", fields: [createdById], references: [id])
+  certificates Certificate[]
+  assets     Asset[]       @relation("PlanAssets")
+  tasks      Task[]
+  timeline   TimelineEvent[]
+  
+  @@map("inspection_plans")
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  name        String
+  code        String?
+  type        String
+  description String?
+  location    String?
+  status      String   @default("active") // active, inactive, maintenance
+  companyId   String
+  planId      String?
+  certificateId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  plan        InspectionPlan? @relation("PlanAssets", fields: [planId], references: [id])
+  certificate Certificate?   @relation(fields: [certificateId], references: [id])
+  company     Company        @relation("CompanyAssets", fields: [companyId], references: [id])
+  reports     Report[]
+  
+  @@map("assets")
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("pending") // pending, in_progress, completed, delayed
+  eventDate   DateTime
+  planId      String?
+  orderId     String?
+  userId      String?
+  eventType   String?
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  timestamp   DateTime @default(now())
+  metadata    String?  // JSON string for additional data
+  sequence    Int?     // Order in timeline
+  isMilestone Boolean  @default(false) // Whether this is a milestone
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  plan InspectionPlan? @relation(fields: [planId], references: [id])
+  order Order? @relation(fields: [orderId], references: [id])
+  
+  @@map("timeline_events")
+}
+
+model LeadTimeConfig {
+  id          String   @id @default(cuid())
+  eventType   String   // Type of event (e.g., "survey", "report", "approval")
+  leadTime    Int      // Lead time in days
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("lead_time_configs")
+}
+
+model WorkflowTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  steps WorkflowStep[]
+  
+  @@map("workflow_templates")
+}
+
+model WorkflowStep {
+  id                String   @id @default(cuid())
+  workflowTemplateId String
+  title             String
+  description       String?
+  leadTime          Int      // Lead time in days
+  sequence          Int      // Order in workflow
+  isMilestone       Boolean  @default(false)
+  eventType         String   // Type of event
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+  
+  @@map("workflow_steps")
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  location    String?
+  reportDate  DateTime
+  status      String   @default("draft") // draft, submitted, approved, rejected
+  assetId     String?
+  createdById String
+  images      String? // JSON array of image URLs
+  teamDoContent String? // Content from "Đội Do"
+  teamCheckContent String? // Content from "Đội Check"
+  teamDoImages String? // JSON array of images from "Đội Do"
+  teamCheckImages String? // JSON array of images from "Đội Check"
+  comments    String? // JSON array of comments
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  asset     Asset? @relation(fields: [assetId], references: [id])
+  createdBy User   @relation(fields: [createdById], references: [id])
+  
+  @@map("reports")
+}
+
+model Incident {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  severity    String   // low, medium, high, critical
+  status      String   @default("pending") // pending, in_progress, resolved, closed
+  incidentDate DateTime
+  location    String?
+  reportDate  DateTime @default(now())
+  createdById String
+  images      String? // JSON array of image URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  createdBy User @relation(fields: [createdById], references: [id])
+  
+  @@map("incidents")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  priority    String   @default("medium") // low, medium, high, urgent
+  status      String   @default("todo") // todo, in_progress, review, completed, cancelled
+  dueDate     DateTime?
+  assigneeId  String?
+  createdById String
+  planId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  assignee User?          @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdBy User          @relation("TaskCreator", fields: [createdById], references: [id])
+  plan     InspectionPlan? @relation(fields: [planId], references: [id])
+  
+  @@map("tasks")
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // CUSTOMER, SUPPLIER, COLLABORATOR
+  email       String?
+  phone       String?
+  address     String?
+  taxCode     String?
+  contactPerson String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orders      Order[]
+  
+  @@map("partners")
+}
+
+model Branch {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String?
+  phone       String?
+  email       String?
+  manager     String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orders      Order[]
+  
+  @@map("branches")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  company     String
+  description String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE, COMPLETED
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orders      Order[]
+  
+  @@map("projects")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNumber   String   @unique
+  userId        String
+  projectId     String
+  partnerId     String?
+  branchId      String?
+  status        String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  inspectionType String  // EAIP_ASSESSMENT, SAFETY_INSPECTION, QUALITY_AUDIT
+  scheduledDate DateTime
+  completedDate DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  user         User         @relation(fields: [userId], references: [id])
+  project      Project      @relation(fields: [projectId], references: [id])
+  partner      Partner?     @relation(fields: [partnerId], references: [id])
+  branch       Branch?      @relation(fields: [branchId], references: [id])
+  eaipReports  EAIPReport[]
+  timeline     TimelineEvent[]
+  
+  @@map("orders")
+}
+
+model EAIPReport {
+  id             String   @id @default(cuid())
+  orderId        String
+  severity       String   // LOW, MEDIUM, HIGH, CRITICAL
+  riskLevel      String   // LOW, MEDIUM, HIGH, CRITICAL
+  status         String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, REVIEWED, APPROVED
+  description    String?
+  recommendations String?
+  reportDate     DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  order          Order         @relation(fields: [orderId], references: [id])
+  
+  @@map("eaip_reports")
+}
+
+model RasciMatrix {
+  id          String   @id @default(cuid())
+  projectId   String?
+  taskId      String?
+  activity    String
+  role        String   // R, A, S, C, I
+  assigneeId  String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("rasci_matrix")
+}
