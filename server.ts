@@ -3,6 +3,10 @@ import { setupSocket } from '@/lib/socket';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import next from 'next';
+import { initMockEnvironment } from './src/lib/mock-env';
+
+// Initialize mock environment for demo
+initMockEnvironment();
 
 const dev = process.env.NODE_ENV !== 'production';
 const currentPort = 3000;
