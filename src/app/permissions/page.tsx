@@ -25,6 +25,7 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react'
+import { ViewHeader } from '@/components/view-header'
 
 interface Permission {
   id: number
@@ -479,177 +480,169 @@ export default function PermissionsPage() {
     <AppLayout>
       <div className="space-y-4">
       {/* Header with Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-900">Phân quyền</h1>
-        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-          <div className="relative flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <Input
-              placeholder="Tìm kiếm..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      <ViewHeader
+        title="Phân quyền"
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+      >
+        <select
+          value={selectedModule}
+          onChange={(e) => setSelectedModule(e.target.value)}
+          className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
+        >
+          <option value="all">Tất cả modules</option>
+          {modules.map(module => (
+            <option key={module} value={module}>{module}</option>
+          ))}
+        </select>
+        <select
+          value={selectedLevel}
+          onChange={(e) => setSelectedLevel(e.target.value)}
+          className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
+        >
+          <option value="all">Tất cả cấp độ</option>
+          <option value="Full">Full</option>
+          <option value="Partial">Partial</option>
+          <option value="Read Only">Read Only</option>
+        </select>
+      </ViewHeader>
+      <select
+        value={selectedStatus}
+        onChange={(e) => setSelectedStatus(e.target.value)}
+        className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
+      >
+        <option value="all">Tất cả trạng thái</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+      <Button className="bg-blue-600 hover:bg-blue-700">
+        <Plus className="w-4 h-4 mr-2" />
+        Tạo vai trò mới
+      </Button>
+    </div>
+
+    {/* Permission Levels Legend */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Các cấp độ quyền</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-2">
+            <Unlock className="w-5 h-5 text-purple-600" />
+            <Badge className="bg-purple-100 text-purple-800">Full</Badge>
+            <span className="text-sm">Toàn quyền truy cập module</span>
           </div>
-          <select
-            value={selectedModule}
-            onChange={(e) => setSelectedModule(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
-          >
-            <option value="all">Tất cả modules</option>
-            {modules.map(module => (
-              <option key={module} value={module}>{module}</option>
-            ))}
-          </select>
-          <select
-            value={selectedLevel}
-            onChange={(e) => setSelectedLevel(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
-          >
-            <option value="all">Tất cả cấp độ</option>
-            <option value="Full">Full</option>
-            <option value="Partial">Partial</option>
-            <option value="Read Only">Read Only</option>
-          </select>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-md bg-white text-sm"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Tạo vai trò mới
+          <div className="flex items-center space-x-2">
+            <Key className="w-5 h-5 text-blue-600" />
+            <Badge className="bg-blue-100 text-blue-800">Partial</Badge>
+            <span className="text-sm">Quyền truy cập một phần</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Lock className="w-5 h-5 text-gray-600" />
+            <Badge className="bg-gray-100 text-gray-800">Read Only</Badge>
+            <span className="text-sm">Chỉ được xem thông tin</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Data Table */}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Danh sách phân quyền</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <DataTable
+          data={filteredPermissions}
+          columns={columns}
+          renderCell={renderCell}
+          searchable={true}
+          pagination={true}
+          itemsPerPage={10}
+          onRowClick={handleView}
+        />
+      </CardContent>
+    </Card>
+
+    {/* View Permission Dialog */}
+    <Dialog open={!!viewingPermission} onOpenChange={() => setViewingPermission(null)}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Chi tiết Phân quyền</DialogTitle>
+        </DialogHeader>
+        {viewingPermission && (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Shield className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">{viewingPermission.roleName}</h3>
+                <p className="text-sm text-slate-600">{viewingPermission.description}</p>
+                <div className="flex items-center space-x-2 mt-2">
+                  {getLevelIcon(viewingPermission.level)}
+                  <Badge className={`text-xs ${getLevelColor(viewingPermission.level)}`}>{viewingPermission.level}</Badge>
+                  <Badge className={`text-xs ${getStatusColor(viewingPermission.status)}`}>{viewingPermission.status}</Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-medium text-sm text-slate-700 mb-2">Module</h4>
+                <p className="text-sm">{viewingPermission.module}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-slate-700 mb-2">Số người dùng</h4>
+                <div className="flex items-center space-x-1">
+                  <User className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm">{viewingPermission.users}</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-slate-700 mb-2">Ngày tạo</h4>
+                <p className="text-sm">{viewingPermission.createdDate}</p>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-slate-700 mb-2">Ngày sửa</h4>
+                <p className="text-sm">{viewingPermission.modifiedDate}</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-sm text-slate-700 mb-2">Quyền hạn</h4>
+              <div className="flex flex-wrap gap-2">
+                {viewingPermission.permissions.map((perm, index) => (
+                  <Badge key={index} className="text-xs bg-blue-100 text-blue-800">
+                    {perm}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {viewingPermission.restrictions.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm text-slate-700 mb-2">Hạn chế</h4>
+                <ul className="text-sm text-slate-600 space-y-1">
+                  {viewingPermission.restrictions.map((restriction, index) => (
+                    <li key={index} className="flex items-start space-x-2">
+                      <span className="text-red-500 mt-0.5">•</span>
+                      <span>{restriction}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={() => setViewingPermission(null)}>
+            Đóng
           </Button>
         </div>
-      </div>
-
-      {/* Permission Levels Legend */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Các cấp độ quyền</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-2">
-              <Unlock className="w-5 h-5 text-purple-600" />
-              <Badge className="bg-purple-100 text-purple-800">Full</Badge>
-              <span className="text-sm">Toàn quyền truy cập module</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Key className="w-5 h-5 text-blue-600" />
-              <Badge className="bg-blue-100 text-blue-800">Partial</Badge>
-              <span className="text-sm">Quyền truy cập một phần</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Lock className="w-5 h-5 text-gray-600" />
-              <Badge className="bg-gray-100 text-gray-800">Read Only</Badge>
-              <span className="text-sm">Chỉ được xem thông tin</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Danh sách phân quyền</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            data={filteredPermissions}
-            columns={columns}
-            renderCell={renderCell}
-            searchable={false}
-            pagination={true}
-            itemsPerPage={10}
-            onRowClick={handleView}
-          />
-        </CardContent>
-      </Card>
-
-      {/* View Permission Dialog */}
-      <Dialog open={!!viewingPermission} onOpenChange={() => setViewingPermission(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Chi tiết Phân quyền</DialogTitle>
-          </DialogHeader>
-          {viewingPermission && (
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">{viewingPermission.roleName}</h3>
-                  <p className="text-sm text-slate-600">{viewingPermission.description}</p>
-                  <div className="flex items-center space-x-2 mt-2">
-                    {getLevelIcon(viewingPermission.level)}
-                    <Badge className={`text-xs ${getLevelColor(viewingPermission.level)}`}>{viewingPermission.level}</Badge>
-                    <Badge className={`text-xs ${getStatusColor(viewingPermission.status)}`}>{viewingPermission.status}</Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-sm text-slate-700 mb-2">Module</h4>
-                  <p className="text-sm">{viewingPermission.module}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm text-slate-700 mb-2">Số người dùng</h4>
-                  <div className="flex items-center space-x-1">
-                    <User className="w-4 h-4 text-slate-500" />
-                    <span className="text-sm">{viewingPermission.users}</span>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm text-slate-700 mb-2">Ngày tạo</h4>
-                  <p className="text-sm">{viewingPermission.createdDate}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm text-slate-700 mb-2">Ngày sửa</h4>
-                  <p className="text-sm">{viewingPermission.modifiedDate}</p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-sm text-slate-700 mb-2">Quyền hạn</h4>
-                <div className="flex flex-wrap gap-2">
-                  {viewingPermission.permissions.map((perm, index) => (
-                    <Badge key={index} className="text-xs bg-blue-100 text-blue-800">
-                      {perm}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {viewingPermission.restrictions.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-sm text-slate-700 mb-2">Hạn chế</h4>
-                  <ul className="text-sm text-slate-600 space-y-1">
-                    {viewingPermission.restrictions.map((restriction, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <span className="text-red-500 mt-0.5">•</span>
-                        <span>{restriction}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={() => setViewingPermission(null)}>
-              Đóng
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+      </DialogContent>
+    </Dialog>
     </AppLayout>
   )
 }

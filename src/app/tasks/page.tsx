@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AppLayout } from '@/components/app-layout'
+import { ViewHeader } from '@/components/view-header'
 import { 
   CheckSquare, 
   Clock,
@@ -322,54 +323,12 @@ export default function TasksPage() {
     <AppLayout>
       <div className="min-h-screen bg-[#F8FBFF] p-2">
         <div className="space-y-3">
-          {/* Header with Integrated Filters */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <h1 className="text-lg font-semibold text-[#1A365D]">Quản lý Tasks</h1>
-            
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              {/* Integrated Filters */}
-              <div className="flex items-center gap-2 bg-white border border-[#D1E5F0] rounded-lg px-2 py-1">
-                <span className="text-xs font-medium text-[#6B7280] whitespace-nowrap">Lọc:</span>
-                <select 
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                  className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
-                >
-                  <option value="">Trạng thái</option>
-                  <option value="TODO">Cần làm</option>
-                  <option value="IN_PROGRESS">Đang làm</option>
-                  <option value="REVIEW">Đánh giá</option>
-                  <option value="COMPLETED">Hoàn thành</option>
-                  <option value="CANCELLED">Hủy bỏ</option>
-                </select>
-                <select 
-                  value={filters.priority}
-                  onChange={(e) => handleFilterChange('priority', e.target.value)}
-                  className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
-                >
-                  <option value="">Ưu tiên</option>
-                  <option value="URGENT">Urgent</option>
-                  <option value="HIGH">High</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="LOW">Low</option>
-                </select>
-                <select 
-                  value={filters.assignee}
-                  onChange={(e) => handleFilterChange('assignee', e.target.value)}
-                  className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
-                >
-                  <option value="">Người thực hiện</option>
-                  {getUniqueAssignees().map(assignee => (
-                    <option key={assignee} value={assignee}>{assignee}</option>
-                  ))}
-                </select>
-                <input 
-                  type="text"
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  placeholder="Tìm kiếm..."
-                  className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] w-24 sm:w-32"
-                />
+          <ViewHeader
+            title="Quản lý Tasks"
+            searchValue={filters.search}
+            onSearchChange={(v) => handleFilterChange('search', v)}
+            actions={
+              <>
                 <Button 
                   size="sm" 
                   variant="ghost" 
@@ -383,10 +342,6 @@ export default function TasksPage() {
                 >
                   <Filter className="w-3 h-3" />
                 </Button>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
                 <Button 
                   size="sm" 
                   variant="outline" 
@@ -404,9 +359,46 @@ export default function TasksPage() {
                   <Plus className="w-3 h-3 mr-1" />
                   Tạo mới
                 </Button>
-              </div>
+              </>
+            }
+          >
+            <div className="flex items-center gap-2 bg-white border border-[#D1E5F0] rounded-lg px-2 py-1">
+              <span className="text-xs font-medium text-[#6B7280] whitespace-nowrap">Lọc:</span>
+              <select 
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
+              >
+                <option value="">Trạng thái</option>
+                <option value="TODO">Cần làm</option>
+                <option value="IN_PROGRESS">Đang làm</option>
+                <option value="REVIEW">Đánh giá</option>
+                <option value="COMPLETED">Hoàn thành</option>
+                <option value="CANCELLED">Hủy bỏ</option>
+              </select>
+              <select 
+                value={filters.priority}
+                onChange={(e) => handleFilterChange('priority', e.target.value)}
+                className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
+              >
+                <option value="">Ưu tiên</option>
+                <option value="URGENT">Urgent</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
+              <select 
+                value={filters.assignee}
+                onChange={(e) => handleFilterChange('assignee', e.target.value)}
+                className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
+              >
+                <option value="">Người thực hiện</option>
+                {getUniqueAssignees().map(assignee => (
+                  <option key={assignee} value={assignee}>{assignee}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          </ViewHeader>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">

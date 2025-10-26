@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { AppLayout } from '@/components/app-layout'
+import { ViewHeader } from '@/components/view-header'
 
 interface Customer {
   id: string
@@ -235,54 +236,21 @@ export default function CustomersPage() {
     <AppLayout>
       <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <h1 className="text-3xl font-bold text-[#1A365D]">Khách hàng</h1>
-        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-          <div className="relative flex-1 sm:flex-initial">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#64748B]" />
-            <Input
-              placeholder="Tìm kiếm theo tên, mã, email, điện thoại..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-[#D1E5F0]"
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-[#D1E5F0] rounded-md text-sm"
-          >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-            <option value="pending">Chờ duyệt</option>
-          </select>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 border border-[#D1E5F0] rounded-md text-sm"
-          >
-            <option value="all">Tất cả loại</option>
-            <option value="corporate">Tổ chức</option>
-            <option value="individual">Cá nhân</option>
-          </select>
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button 
-            className="bg-[#3A7BD5] hover:bg-[#2E5FA4]"
-            onClick={handleCreateCustomer}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Thêm khách hàng
-          </Button>
-        </div>
-      </div>
+      <ViewHeader
+        title="Khách hàng"
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+      >
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-3 py-2 border border-[#D1E5F0] rounded-md text-sm"
+        >
+          <option value="all">Tất cả trạng thái</option>
+          <option value="active">Hoạt động</option>
+          <option value="inactive">Ngưng hoạt động</option>
+        </select>
+      </ViewHeader>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

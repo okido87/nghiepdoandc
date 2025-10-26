@@ -31,6 +31,7 @@ import {
   Save,
   X
 } from 'lucide-react'
+import { ViewHeader } from '@/components/view-header'
 
 interface MasterData {
   id: number
@@ -722,7 +723,8 @@ export default function MasterDataPage() {
           </div>
         )
       default:
-        return data[column as keyof MasterData]
+        const value = data[column as keyof MasterData]
+        return typeof value === 'object' ? JSON.stringify(value) : String(value)
     }
   }
 
@@ -733,6 +735,45 @@ export default function MasterDataPage() {
     <AppLayout>
       <div className="space-y-3">
       {/* Header with Integrated Filters */}
+      <ViewHeader
+        title="Quản lý Master Data"
+        searchValue={filters.search}
+        onSearchChange={(v) => handleFilterChange('search', v)}
+      >
+        <div className="flex items-center gap-2 bg-white border border-[#D1E5F0] rounded-lg px-2 py-1">
+          <span className="text-xs font-medium text-[#6B7280] whitespace-nowrap">Lọc:</span>
+          <select 
+            value={filters.type}
+            onChange={(e) => handleFilterChange('type', e.target.value)}
+            className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
+          >
+            <option value="">Loại dữ liệu</option>
+            <option value="Customer">Khách hàng</option>
+            <option value="Equipment">Thiết bị</option>
+            <option value="Standard">Tiêu chuẩn</option>
+            <option value="Location">Vị trí</option>
+            <option value="Service">Dịch vụ</option>
+          </select>
+          <select 
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className="text-xs p-1 border-0 bg-transparent focus:outline-none focus:ring-1 focus:ring-[#3A7BD5] rounded"
+          >
+            <option value="">Trạng thái</option>
+            <option value="Active">Hoạt động</option>
+            <option value="Inactive">Ngưng hoạt động</option>
+          </select>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              value={filters.search} 
+              onChange={(e) => handleFilterChange('search', e.target.value)} 
+              placeholder="Tìm kiếm..." 
+              className="pl-8 h-8"
+            />
+          </div>
+        </div>
+      </ViewHeader>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <h1 className="text-lg font-semibold text-[#1A365D]">Quản lý Master Data</h1>
         
@@ -861,7 +902,7 @@ export default function MasterDataPage() {
             data={filteredData}
             columns={columns}
             renderCell={renderCell}
-            searchable={false}
+            searchable={true}
             pagination={true}
             itemsPerPage={10}
             onRowClick={handleView}
