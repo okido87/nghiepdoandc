@@ -40,6 +40,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:seed": "tsx data/seed-database.ts",
+    "db:recover": "tsx scripts/recover-demo.ts",
     "db:studio": "prisma studio",
     "docs:dev": "next dev --port 3001",
     "test": "jest",

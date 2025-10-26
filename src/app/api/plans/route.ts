@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
         OR: [
           { name: { contains: search } },
           { description: { contains: search } },
-          { company: { name: { contains: search } } }
+          // Fix relational filter to company: use `is` for singular relation
+          { company: { is: { name: { contains: search } } } }
         ]
       })
     }
